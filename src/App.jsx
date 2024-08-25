@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import "./App.css";
 
 function App() {
-  const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [url, setUrl] = useState("");
   const [word, setWord] = useState("");
 
   const parseHTML = async () => {
@@ -71,14 +71,35 @@ function App() {
   };
 
   useEffect(() => {
+    let index = 0;
+    const interval = setInterval(() => {
+      if (word) {
+        const node = document.createElement("li");
+        const textnode = document.createTextNode(word[index]);
+        node.appendChild(textnode);
+        document.querySelector(".type-writer").appendChild(node);
+
+        index++;
+      }
+
+      if (index === word.length) {
+        clearInterval(interval);
+      }
+    }, 300);
+
+    return () => clearInterval(interval);
+  }, [word]);
+
+  useEffect(() => {
     const getWordFromUrl = async (link) => {
       const res = await fetch(link);
 
       if (res.status !== 200) {
-        alert("Unable to get work from link");
+        alert("Unable to get word from link");
       }
 
       setWord(await res.text());
+      setLoading(false);
     };
 
     if (url) {
@@ -87,7 +108,7 @@ function App() {
   }, [url]);
 
   if (word) {
-    return <div>{word}</div>;
+    return <ul className="type-writer"></ul>;
   } else if (loading) {
     return <div>loading...</div>;
   } else {
